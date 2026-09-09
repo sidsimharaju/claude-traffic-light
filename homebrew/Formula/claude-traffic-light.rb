@@ -77,6 +77,9 @@ class ClaudeTrafficLight < Formula
 
       To remove the hooks again (e.g. before `brew uninstall`):
         claude-traffic-light uninstall-hooks
+
+      If you ever quit the app from its own menu, reopen it with:
+        claude-traffic-light start
     EOS
   end
 

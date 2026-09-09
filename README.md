@@ -69,6 +69,14 @@ claude-traffic-light run   # runs in the foreground; Ctrl-C to stop
 
 If you want it running in the background at login without Homebrew, wrap that last command in your own LaunchAgent — `install-hooks` never touches launchd, only `~/.claude/settings.json`.
 
+### Reopening after you quit it
+
+Click **Quit** in the dropdown and it's gone — one command brings it back, regardless of how you installed it:
+
+```bash
+claude-traffic-light start
+```
+
 ## Uninstall
 
 ```bash
@@ -83,6 +91,7 @@ brew uninstall claude-traffic-light
 claude-traffic-light install-hooks     merge the 6 hook entries into ~/.claude/settings.json (idempotent)
 claude-traffic-light uninstall-hooks   remove exactly those entries again
 claude-traffic-light run               launch the menu bar app in the foreground
+claude-traffic-light start             reopen it in the background after quitting (brew services if available, else spawns directly)
 claude-traffic-light hook <state>      internal: what the hooks themselves call
 ```
 

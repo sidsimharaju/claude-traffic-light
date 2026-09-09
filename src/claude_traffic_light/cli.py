@@ -7,6 +7,8 @@ Subcommands:
     install-hooks       merges the six hook entries into ~/.claude/settings.json
     uninstall-hooks      removes exactly those entries again
     run                 launches the menu bar app (foreground)
+    start               reopen the app after quitting it (background); the
+                        one command to remember regardless of install method
 
 Hooks are registered pointing at this same `claude-traffic-light` command
 (resolved via PATH at call time), not at an absolute path into this
@@ -17,6 +19,7 @@ live.
 import argparse
 import json
 import shutil
+import subprocess
 import sys
 from pathlib import Path
 
@@ -185,6 +188,56 @@ def run_app() -> int:
     return 0
 
 
+def _is_already_running() -> bool:
+    try:
+        result = subprocess.run(
+            ["pgrep", "-f", f"{COMMAND_NAME} run"],
+            capture_output=True,
+        )
+        return result.returncode == 0
+    except Exception:
+        return False
+
+
+def start_app() -> int:
+    """Reopen the menu bar app after it's been quit — the one command to
+    remember regardless of how it was installed. Prefers `brew services`
+    when this is a brew-managed install (so it stays consistent with
+    `brew services list`/autostart-at-login); otherwise spawns `run`
+    directly, detached from this process."""
+    if _is_already_running():
+        print("claude-traffic-light is already running.")
+        return 0
+
+    brew = shutil.which("brew")
+    if brew:
+        # `brew services info` can succeed just by reading the tapped
+        # formula's metadata, even if it isn't actually installed (as
+        # happened during development) — so don't trust that alone.
+        # Actually try `brew services start`, and only treat it as the
+        # answer if it succeeds; otherwise fall through to spawning
+        # directly rather than surfacing brew's error for something it
+        # was never going to be able to do anyway.
+        result = subprocess.run(
+            [brew, "services", "start", COMMAND_NAME],
+            capture_output=True,
+            text=True,
+        )
+        if result.returncode == 0:
+            print(result.stdout.strip() or f"Started {COMMAND_NAME} via brew services.")
+            return 0
+
+    exe = _resolved_command()
+    subprocess.Popen(
+        [exe, "run"],
+        start_new_session=True,
+        stdout=subprocess.DEVNULL,
+        stderr=subprocess.DEVNULL,
+    )
+    print("Started claude-traffic-light.")
+    return 0
+
+
 def main(argv=None) -> int:
     argv = sys.argv[1:] if argv is None else argv
     parser = argparse.ArgumentParser(prog=COMMAND_NAME)
@@ -195,7 +248,8 @@ def main(argv=None) -> int:
 
     sub.add_parser("install-hooks", help="register hooks in ~/.claude/settings.json")
     sub.add_parser("uninstall-hooks", help="remove those hooks again")
-    sub.add_parser("run", help="launch the menu bar app")
+    sub.add_parser("run", help="launch the menu bar app (foreground)")
+    sub.add_parser("start", help="reopen the menu bar app after quitting it (background)")
 
     args = parser.parse_args(argv)
 
@@ -207,6 +261,8 @@ def main(argv=None) -> int:
         return uninstall_hooks()
     if args.cmd == "run":
         return run_app()
+    if args.cmd == "start":
+        return start_app()
     return 1
 
 
