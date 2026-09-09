@@ -1,0 +1,46 @@
+<svg width="720" height="150" viewBox="0 0 720 150" fill="none" xmlns="http://www.w3.org/2000/svg" role="img" aria-label="The three menu bar states: green running, amber needs your attention, grey idle">
+  <defs>
+    <radialGradient id="s-hi-lit" cx="34%" cy="26%" r="45%">
+      <stop offset="0%" stop-color="#ffffff" stop-opacity="0.75"/>
+      <stop offset="100%" stop-color="#ffffff" stop-opacity="0"/>
+    </radialGradient>
+    <radialGradient id="s-glow-g" cx="50%" cy="50%" r="50%">
+      <stop offset="0%" stop-color="#4a9863" stop-opacity="0.5"/>
+      <stop offset="100%" stop-color="#4a9863" stop-opacity="0"/>
+    </radialGradient>
+  </defs>
+
+  <!-- running -->
+  <g transform="translate(40,0)">
+    <circle cx="26" cy="30" r="30" fill="url(#s-glow-g)"/>
+    <circle cx="26" cy="30" r="17" fill="#4a9863"/>
+    <circle cx="26" cy="30" r="17" fill="url(#s-hi-lit)"/>
+    <text x="58" y="26" font-family="ui-monospace, SFMono-Regular, Menlo, monospace" font-size="17" font-weight="600" fill="#222222">running</text>
+    <text x="0" y="70" font-family="-apple-system, Helvetica, Arial, sans-serif" font-size="13" fill="#6a6a6a">
+      <tspan x="0" dy="0">Working on your prompt</tspan>
+      <tspan x="0" dy="16">or a tool call.</tspan>
+    </text>
+  </g>
+
+  <!-- needs your attention -->
+  <g transform="translate(290,0)">
+    <circle cx="16" cy="30" r="17" fill="#ffa93f"/>
+    <circle cx="16" cy="30" r="17" fill="url(#s-hi-lit)"/>
+    <text x="48" y="26" font-family="ui-monospace, SFMono-Regular, Menlo, monospace" font-size="17" font-weight="600" fill="#222222">needs your attention</text>
+    <text x="0" y="70" font-family="-apple-system, Helvetica, Arial, sans-serif" font-size="13" fill="#6a6a6a">
+      <tspan x="0" dy="0">A permission prompt, or</tspan>
+      <tspan x="0" dy="16">idle waiting on your reply.</tspan>
+    </text>
+  </g>
+
+  <!-- idle -->
+  <g transform="translate(560,0)">
+    <circle cx="16" cy="30" r="17" fill="#e7dcd2"/>
+    <circle cx="16" cy="30" r="17" fill="url(#s-hi-lit)"/>
+    <text x="48" y="26" font-family="ui-monospace, SFMono-Regular, Menlo, monospace" font-size="17" font-weight="600" fill="#222222">idle</text>
+    <text x="0" y="70" font-family="-apple-system, Helvetica, Arial, sans-serif" font-size="13" fill="#6a6a6a">
+      <tspan x="0" dy="0">Finished its last turn</tspan>
+      <tspan x="0" dy="16">and is waiting.</tspan>
+    </text>
+  </g>
+</svg>

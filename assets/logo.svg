@@ -1,0 +1,51 @@
+<svg width="240" height="300" viewBox="0 0 240 300" fill="none" xmlns="http://www.w3.org/2000/svg" role="img" aria-label="Claude Traffic Light logo: a small traffic-light housing with a lit green lamp on top, dim amber and grey lamps below">
+  <title>Claude Traffic Light</title>
+  <defs>
+    <radialGradient id="lampGreenHi" cx="34%" cy="26%" r="45%">
+      <stop offset="0%" stop-color="#ffffff" stop-opacity="0.75"/>
+      <stop offset="100%" stop-color="#ffffff" stop-opacity="0"/>
+    </radialGradient>
+    <radialGradient id="lampDimHi" cx="34%" cy="26%" r="45%">
+      <stop offset="0%" stop-color="#ffffff" stop-opacity="0.28"/>
+      <stop offset="100%" stop-color="#ffffff" stop-opacity="0"/>
+    </radialGradient>
+    <radialGradient id="glow" cx="50%" cy="50%" r="50%">
+      <stop offset="0%" stop-color="#4a9863" stop-opacity="0.55"/>
+      <stop offset="100%" stop-color="#4a9863" stop-opacity="0"/>
+    </radialGradient>
+    <radialGradient id="groundShadow" cx="50%" cy="50%" r="50%">
+      <stop offset="0%" stop-color="#222222" stop-opacity="0.18"/>
+      <stop offset="100%" stop-color="#222222" stop-opacity="0"/>
+    </radialGradient>
+    <linearGradient id="housingSheen" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0%" stop-color="#ffffff" stop-opacity="0.08"/>
+      <stop offset="40%" stop-color="#ffffff" stop-opacity="0"/>
+      <stop offset="100%" stop-color="#000000" stop-opacity="0.16"/>
+    </linearGradient>
+  </defs>
+
+  <!-- ground shadow -->
+  <ellipse cx="120" cy="268" rx="58" ry="10" fill="url(#groundShadow)"/>
+
+  <!-- glow behind the lit lamp -->
+  <circle cx="120" cy="72" r="52" fill="url(#glow)"/>
+
+  <!-- housing -->
+  <rect x="40" y="30" width="160" height="210" rx="42" fill="#33312f"/>
+  <rect x="40" y="30" width="160" height="210" rx="42" fill="url(#housingSheen)"/>
+
+  <!-- recessed frame -->
+  <rect x="56" y="46" width="128" height="178" rx="28" fill="#eeedec"/>
+
+  <!-- lamp 1: green, lit (running) -->
+  <circle cx="120" cy="72" r="26" fill="#4a9863"/>
+  <circle cx="120" cy="72" r="26" fill="url(#lampGreenHi)"/>
+
+  <!-- lamp 2: amber, dim (needs_action) -->
+  <circle cx="120" cy="135" r="26" fill="#8f6a1f"/>
+  <circle cx="120" cy="135" r="26" fill="url(#lampDimHi)"/>
+
+  <!-- lamp 3: grey, dim (idle) -->
+  <circle cx="120" cy="198" r="26" fill="#6b6058"/>
+  <circle cx="120" cy="198" r="26" fill="url(#lampDimHi)"/>
+</svg>

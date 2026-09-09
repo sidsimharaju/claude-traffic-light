@@ -1,95 +1,62 @@
-# Claude Traffic Light
+<h1 align="center">
+  <br>
+  <img src="assets/logo.svg" alt="Claude Traffic Light" width="140">
+  <br>
+  Claude Traffic Light
+  <br>
+</h1>
 
-A macOS menu bar dot that shows what [Claude Code](https://claude.com/claude-code) is doing right now, so you don't have to keep alt-tabbing back to the terminal to check.
+<h3 align="center">A menu bar dot for Claude Code</h3>
 
-- 🟢 **Green** — Claude is running (working on your prompt or a tool call)
-- ⚪ **Grey** — Claude is idle (finished its last turn, waiting for you)
-- 🟡 **Yellow** — Claude needs action (a permission prompt, or it's been sitting idle waiting on your next message)
+<p align="center">
+  <a href="LICENSE"><img src="https://img.shields.io/badge/license-MIT-black.svg" alt="MIT License"></a>
+  <img src="https://img.shields.io/badge/platform-macOS-black.svg" alt="macOS">
+  <img src="https://img.shields.io/badge/install-Homebrew-black.svg" alt="Homebrew">
+</p>
 
-With several Claude Code sessions open at once, the dot shows the busiest one — yellow beats green beats grey — and the dropdown lists every session individually.
+Claude Code fires **hooks** — small signals it sends the instant a session changes state: when you submit a prompt, when it calls a tool, when it needs your OK, when it finishes a turn. Claude Traffic Light turns those into a single colored dot in your macOS menu bar, so you always know at a glance whether Claude is working, waiting on you, or done — without alt-tabbing back to the terminal just to check.
 
-## How it works
-
-Claude Code fires **hooks** — small commands it runs automatically at specific points in a session (when you submit a prompt, when it calls a tool, when it needs a permission decision, when it finishes a turn, etc.). There's no need to poll logs or scrape the terminal window: Claude Code tells us directly.
-
-```
-Claude Code session                     claude-traffic-light hook       Menu bar app
-────────────────────                    ──────────────────────          ────────────
-You submit a prompt      ──UserPromptSubmit──►  writes state=running ─┐
-Claude calls a tool      ──PreToolUse────────►  writes state=running  │  polls
-                                                                       ├─ ~/.claude-traffic-light/     every
-Needs your OK / idle     ──Notification───────► writes state=needs_   │  sessions/<id>.json           5 sec
-                          (permission_prompt,     action               │
-                           idle_prompt,                                │
-                           agent_needs_input)                          │
-Claude finishes a turn    ──Stop────────────►  writes state=idle      │
-Session closes            ──SessionEnd────────► deletes the file     ─┘
-```
-
-Each Claude Code session gets its own file (named by session ID) under `~/.claude-traffic-light/sessions/`. The menu bar app just reads that folder every couple of seconds — it never talks to Claude Code directly, so it can't slow anything down or break a session if it crashes.
-
-Hooks are registered pointing at the `claude-traffic-light` command resolved on `PATH` at install time, not at some fixed path into a cloned repo — so it keeps working across upgrades and however you installed it.
+<p align="center">
+  <img src="assets/states.svg" alt="The three states: green running, amber needs your attention, grey idle" width="600">
+</p>
 
 ## Install
 
-### Sharing this with someone else
-
-Send them this one line — it works even if they've never installed Homebrew:
+One line, works even on a completely fresh Mac — installs Homebrew if it's missing, then everything else:
 
 ```bash
 curl -fsSL https://get-claude-traffic-light.siddharth-simharaju.workers.dev | bash
 ```
 
-That's a Cloudflare Worker ([`worker/`](worker/)) that proxies the same `install.sh` from a short URL and counts install attempts along the way. If it's ever down for any reason, the direct GitHub URL always works too:
+Open (or restart) a Claude Code session and the dot turns green the moment you submit a prompt.
 
-```bash
-curl -fsSL https://raw.githubusercontent.com/sidsimharaju/claude-traffic-light/main/install.sh | bash
-```
-
-It installs Homebrew first if they don't have it, then runs everything below for them — including the hooks and service steps, which is why `install.sh` exists at all rather than just pointing people at `brew install`. (Homebrew's `post_install` looked like the right place to automate those two steps, but it isn't: it runs in a sandboxed build environment with a fake `$HOME`, so a hooks-install step there silently writes to nowhere useful, and starting a tap's service from it hits Homebrew's tap-trust gate regardless. Both only work when run for real, in your own shell — which is exactly what `install.sh` does.)
-
-### Homebrew (manual steps)
+Prefer to see each step, or already have Homebrew?
 
 ```bash
 brew install sidsimharaju/claude-traffic-light/claude-traffic-light
 claude-traffic-light install-hooks
-brew trust --formula sidsimharaju/claude-traffic-light/claude-traffic-light   # one-time, lets brew run this tap's service
+brew trust --formula sidsimharaju/claude-traffic-light/claude-traffic-light   # one-time
 brew services start claude-traffic-light
 ```
 
-(A bare `brew install claude-traffic-light`, without the `sidsimharaju/claude-traffic-light/` prefix, only works *after* you've tapped at least once — Homebrew has no way to find an untapped formula by short name. The fully-qualified command above always works from a clean machine.)
+## How it works
 
-Open (or restart) a Claude Code session — the dot should turn green as soon as you submit a prompt.
+1. Claude Code calls `claude-traffic-light hook <state>` at six points in a session's life — prompt submitted, tool call starting, permission needed, turn finished, session started, session ended.
+2. Each call writes (or deletes) one small JSON file per session under `~/.claude-traffic-light/sessions/`.
+3. The menu bar app polls that folder every 5 seconds — it never talks to Claude Code directly, so it can't slow a session down or break anything if it crashes.
+4. With several sessions open, the dot shows the busiest one (needs-attention beats running beats idle), and the dropdown lists every session individually so you can tell which one actually needs you.
 
-One dependency (`pyobjc-core`) has C extensions and gets built from source, so this needs Xcode Command Line Tools installed and reasonably current. If you've never run a dev tool on this Mac before, `brew install` will prompt you to install them (accept it, then re-run the command); if they're just outdated, brew's error message tells you to update via Software Update.
+Hooks are registered against the `claude-traffic-light` command resolved on `PATH` at install time — not a fixed path into a cloned repo — so upgrades and reinstalls never break them.
 
-### From source (pipx)
+## Features
 
-```bash
-git clone https://github.com/sidsimharaju/claude-traffic-light.git
-cd claude-traffic-light
-pipx install .
-claude-traffic-light install-hooks
-claude-traffic-light run   # runs in the foreground; Ctrl-C to stop
-```
-
-If you want it running in the background at login without Homebrew, wrap that last command in your own LaunchAgent — `install-hooks` never touches launchd, only `~/.claude/settings.json`.
-
-### Reopening after you quit it
-
-Click **Quit** in the dropdown and it's gone — one command brings it back, regardless of how you installed it:
-
-```bash
-claude-traffic-light start
-```
-
-## Uninstall
-
-```bash
-claude-traffic-light uninstall-hooks   # removes just the 6 hook entries it added
-brew services stop claude-traffic-light
-brew uninstall claude-traffic-light
-```
+| | |
+|---|---|
+| **Live menu bar dot** | 🟢 running · 🟡 needs your attention · ⚪ idle — updates within 5 seconds of anything changing. |
+| **Multi-session aware** | Several Claude Code windows open at once combine into one dot (busiest wins), with a dropdown breakdown per project folder. |
+| **Self-healing** | An abandoned session (terminal force-quit, no clean exit) stops lying about its state within 20 minutes instead of hanging around forever. |
+| **One command to reopen** | Quit it from the dropdown, bring it back with `claude-traffic-light start` — works whether you installed via Homebrew, pipx, or from source. |
+| **Zero-setup sharing** | The install one-liner installs Homebrew *and* Xcode Command Line Tools prompts for you if this Mac has never had them — nothing to explain to a friend first. |
 
 ## CLI reference
 
@@ -97,65 +64,84 @@ brew uninstall claude-traffic-light
 claude-traffic-light install-hooks     merge the 6 hook entries into ~/.claude/settings.json (idempotent)
 claude-traffic-light uninstall-hooks   remove exactly those entries again
 claude-traffic-light run               launch the menu bar app in the foreground
-claude-traffic-light start             reopen it in the background after quitting (brew services if available, else spawns directly)
+claude-traffic-light start             reopen it in the background after quitting
 claude-traffic-light hook <state>      internal: what the hooks themselves call
 ```
 
-## What's in this repo
-
-```
-claude-traffic-light/
-├── src/claude_traffic_light/
-│   ├── hook.py          state-file read/write logic, called by `claude-traffic-light hook <state>`
-│   ├── app.py            the menu bar app (built on rumps)
-│   └── cli.py             install-hooks / uninstall-hooks / run / hook
-├── homebrew/Formula/
-│   └── claude-traffic-light.rb   the tap formula (lives in a separate homebrew-* repo when published)
-├── tests/
-│   └── test_hook.py       unit tests for the hook state-file logic
-└── pyproject.toml
-```
-
-## Verifying it works without waiting on a real session
-
-You can fake a hook call from the terminal to sanity-check the pipeline:
+## Uninstall
 
 ```bash
-echo '{"session_id":"test-1","cwd":"/tmp/demo"}' | claude-traffic-light hook running
-cat ~/.claude-traffic-light/sessions/test-1.json      # should show "state": "running"
-
-echo '{"session_id":"test-1","cwd":"/tmp/demo"}' | claude-traffic-light hook needs_action
-echo '{"session_id":"test-1","cwd":"/tmp/demo"}' | claude-traffic-light hook idle
-echo '{"session_id":"test-1"}' | claude-traffic-light hook ended
-ls ~/.claude-traffic-light/sessions/                  # test-1.json should be gone
+claude-traffic-light uninstall-hooks
+brew services stop claude-traffic-light
+brew uninstall claude-traffic-light
 ```
 
-With the menu bar app running, you should see the dot and the dropdown entry change as you run each of those lines.
+## Building from source
 
-## Development
+```bash
+git clone https://github.com/sidsimharaju/claude-traffic-light.git
+cd claude-traffic-light
+pipx install .
+claude-traffic-light install-hooks
+claude-traffic-light run   # foreground; Ctrl-C to stop
+```
 
 ```bash
 python3 -m pip install -e ".[test]"
 python3 -m pytest tests/ -v
 ```
 
-## Known limitations / things to know
+### Verifying the pipeline without a real session
 
-- **Claude Code only, for now.** Hooks are a Claude Code feature; other AI coding tools that don't expose an equivalent event API can't drive the dot without a much less reliable approach (polling window state or session logs).
-- **Crash recovery is best-effort.** If a terminal is force-quit, `SessionEnd` never fires and its session file lingers. The app prunes any session file untouched for 20+ minutes, and you can always delete `~/.claude-traffic-light/sessions/` yourself. Since the dot combines *all* sessions (busiest wins), one abandoned session sitting at 🟢/🟡 will dominate the dot until it's pruned — if the dot seems stuck, check the dropdown for a session that's actually just dead.
-- **Global, not per-window.** The dot reflects *all* your open Claude Code sessions combined (busiest wins). The dropdown breaks it out by project folder if you need to know which one.
-- **macOS only.** This uses `rumps`/PyObjC menu bar APIs and won't run anywhere else, by design.
+```bash
+echo '{"session_id":"test-1","cwd":"/tmp/demo"}' | claude-traffic-light hook running
+cat ~/.claude-traffic-light/sessions/test-1.json      # "state": "running"
 
-## Roadmap ideas (not built yet)
+echo '{"session_id":"test-1","cwd":"/tmp/demo"}' | claude-traffic-light hook needs_action
+echo '{"session_id":"test-1","cwd":"/tmp/demo"}' | claude-traffic-light hook idle
+echo '{"session_id":"test-1"}' | claude-traffic-light hook ended
+ls ~/.claude-traffic-light/sessions/                  # test-1.json is gone
+```
 
-- Native Swift/SwiftUI `MenuBarExtra` version for a more polished look and per-session icons.
-- A subtle sound or macOS notification the moment a session flips to yellow.
-- Clicking a session in the dropdown to focus/open its terminal window.
+With the app running, watch the dot and dropdown change as each line runs.
+
+## What's in this repo
+
+```
+claude-traffic-light/
+├── src/claude_traffic_light/
+│   ├── hook.py    state-file read/write logic, called by `claude-traffic-light hook <state>`
+│   ├── app.py     the menu bar app (built on rumps)
+│   └── cli.py     install-hooks / uninstall-hooks / run / start / hook
+├── homebrew/Formula/
+│   └── claude-traffic-light.rb   the tap formula
+├── worker/        Cloudflare Worker serving the short install URL
+├── tests/
+└── pyproject.toml
+```
+
+> [!NOTE]
+> **Known limitations**
+> - **Claude Code only, for now** — hooks are a Claude Code feature; other tools without an equivalent event API can't drive the dot reliably.
+> - **Global, not per-window** — the dot reflects all open sessions combined (busiest wins); the dropdown breaks it out by project folder.
+> - **Crash recovery is best-effort** — a force-quit terminal leaves its session file for up to 20 minutes before it's pruned.
+> - **macOS only** — built on `rumps`/PyObjC, by design.
+
+## Roadmap ideas
+
+- Native Swift/SwiftUI `MenuBarExtra` version, for a more polished look and per-session icons.
+- A subtle sound or notification the moment a session flips to yellow.
+- Click a session in the dropdown to focus its terminal window.
 
 ## Contributing
 
 Issues and PRs welcome. Run `python3 -m pytest tests/ -v` before sending one.
 
+## Acknowledgements
+
+- **[rumps](https://github.com/jaredks/rumps)** — the menu bar app framework this is built on.
+- **[Claude Code](https://claude.com/claude-code)** — the hooks API that makes this possible at all.
+
 ## License
 
-MIT — see [LICENSE](LICENSE).
+[MIT](LICENSE) © Siddharth Simharaju
