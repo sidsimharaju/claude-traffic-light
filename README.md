@@ -54,6 +54,8 @@ That's it. The fully-qualified `user/tap/formula` form taps the repo and install
 
 Open (or restart) a Claude Code session — the dot should turn green as soon as you submit a prompt.
 
+One dependency (`pyobjc-core`) has C extensions and gets built from source, so this needs Xcode Command Line Tools installed and reasonably current. If you've never run a dev tool on this Mac before, `brew install` will prompt you to install them (accept it, then re-run the command); if they're just outdated, brew's error message tells you to update via Software Update.
+
 If you ever need to redo either automatic step by hand (e.g. `install-hooks` silently no-ops if `~/.claude` isn't writable yet):
 
 ```bash

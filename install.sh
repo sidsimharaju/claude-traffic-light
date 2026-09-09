@@ -34,6 +34,21 @@ if ! command -v brew >/dev/null 2>&1; then
   fi
 fi
 
+# claude-traffic-light depends on pyobjc-core, which has C extensions and
+# has to be compiled — Homebrew builds every non-bottled tap formula from
+# source, no way around it for a personal tap. If Xcode Command Line
+# Tools aren't installed at all, `xcode-select --install` pops up the
+# normal macOS installer dialog; if they're installed but too old to
+# match the current SDK, brew's own error message is the clearer guide
+# (Software Update, or reinstalling CLT), so just point at that instead
+# of failing on our own vaguer message.
+if ! xcode-select -p >/dev/null 2>&1; then
+  echo "==> Xcode Command Line Tools aren't installed — requesting the install now."
+  echo "    A macOS dialog should appear; click through it, then re-run this script."
+  xcode-select --install
+  exit 1
+fi
+
 echo "==> Installing claude-traffic-light..."
 brew install sidsimharaju/claude-traffic-light/claude-traffic-light
 
