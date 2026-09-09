@@ -40,6 +40,8 @@ Send them this one line — it works even if they've never installed Homebrew:
 curl -fsSL https://raw.githubusercontent.com/sidsimharaju/claude-traffic-light/main/install.sh | bash
 ```
 
+(There's also a shorter, branded URL option with install-count tracking — see [`worker/README.md`](worker/README.md) — but the line above always works regardless.)
+
 It installs Homebrew first if they don't have it, then runs everything below for them — including the hooks and service steps, which is why `install.sh` exists at all rather than just pointing people at `brew install`. (Homebrew's `post_install` looked like the right place to automate those two steps, but it isn't: it runs in a sandboxed build environment with a fake `$HOME`, so a hooks-install step there silently writes to nowhere useful, and starting a tap's service from it hits Homebrew's tap-trust gate regardless. Both only work when run for real, in your own shell — which is exactly what `install.sh` does.)
 
 ### Homebrew (manual steps)
