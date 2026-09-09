@@ -32,6 +32,16 @@ Hooks are registered pointing at the `claude-traffic-light` command resolved on 
 
 ## Install
 
+### Sharing this with someone else
+
+Send them this one line — it works even if they've never installed Homebrew:
+
+```bash
+curl -fsSL https://raw.githubusercontent.com/sidsimharaju/claude-traffic-light/main/install.sh | bash
+```
+
+It installs Homebrew first if they don't have it, then everything below.
+
 ### Homebrew (recommended) — one command
 
 ```bash
