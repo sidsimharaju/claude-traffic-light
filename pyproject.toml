@@ -4,7 +4,7 @@ build-backend = "hatchling.build"
 
 [project]
 name = "claude-traffic-light"
-version = "0.1.3"
+version = "0.1.4"
 description = "A macOS menu bar dot that shows what Claude Code is doing right now."
 readme = "README.md"
 license = "MIT"

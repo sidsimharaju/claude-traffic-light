@@ -52,36 +52,27 @@ class ClaudeTrafficLight < Formula
     error_log_path var/"log/claude-traffic-light.err.log"
   end
 
-  # Registers the Claude Code hooks and starts the menu bar app right
-  # after `brew install` — the whole point of packaging this is a single
-  # command, so don't make the user chase three more steps for it.
-  # `install-hooks` is idempotent (safe on brew upgrade/reinstall too).
-  # Neither step aborts the install if it fails — worst case, the caveats
-  # below show the same two commands to run by hand.
-  def post_install
-    begin
-      system bin/"claude-traffic-light", "install-hooks"
-    rescue => e
-      opoo "claude-traffic-light: couldn't register hooks automatically (#{e}). " \
-           "Run `claude-traffic-light install-hooks` yourself."
-    end
-
-    begin
-      system HOMEBREW_BREW_FILE, "services", "start", name
-    rescue => e
-      opoo "claude-traffic-light: couldn't start the menu bar app automatically (#{e}). " \
-           "Run `brew services start claude-traffic-light` yourself."
-    end
-  end
-
+  # NOTE: deliberately no post_install here. An earlier version ran
+  # `install-hooks` and `brew services start` from post_install to make
+  # this a true one-command install — that's broken by design, confirmed
+  # on a real install: post_install executes in a sandboxed build
+  # environment with a fake $HOME, so install-hooks wrote to some
+  # ephemeral postinstall path instead of the user's real
+  # ~/.claude/settings.json, and starting the service hit Homebrew's
+  # newer tap-trust gate (services from an untapped-trusted tap are
+  # refused) regardless. Both steps have to run in the user's own real
+  # shell — see install.sh at the repo root, which does exactly that
+  # right after `brew install`.
   def caveats
     <<~EOS
-      Hooks are registered in ~/.claude/settings.json and the menu bar app
-      is running — open (or restart) a Claude Code session and the dot
-      should turn green as soon as you submit a prompt.
-
-      If either step above didn't happen (e.g. this ran non-interactively):
+      Register the Claude Code hooks that drive the menu bar dot (one-time,
+      safe to re-run, and per-user — do this as whichever user runs Claude
+      Code):
         claude-traffic-light install-hooks
+
+      Then trust this tap's service (a one-time Homebrew security step for
+      taps that aren't homebrew/core) and start the menu bar app:
+        brew trust --formula sidsimharaju/claude-traffic-light/claude-traffic-light
         brew services start claude-traffic-light
 
       To remove the hooks again (e.g. before `brew uninstall`):

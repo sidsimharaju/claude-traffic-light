@@ -9,9 +9,14 @@
 #      handles Xcode Command Line Tools itself, prompting you if needed —
 #      normal on a first-time setup, and unlike an already-installed-but-
 #      stale CLT, a fresh prompt on a new Mac usually just works).
-#   2. brew installs claude-traffic-light from its tap. The formula's own
-#      post_install step registers the Claude Code hooks and starts the
-#      menu bar app — nothing else to run afterward.
+#   2. brew installs claude-traffic-light from its tap.
+#   3. Registers the Claude Code hooks and starts the menu bar app.
+#
+# Steps 2-4 deliberately happen here, in this real shell, rather than in
+# the formula's post_install: Homebrew runs post_install in a sandboxed
+# build environment with a fake $HOME (so a hooks-install step there
+# writes to nowhere useful) and gates starting a tap's service behind a
+# one-time trust check anyway. Both only work when run for real, as you.
 set -euo pipefail
 
 if [[ "$(uname)" != "Darwin" ]]; then
@@ -51,6 +56,13 @@ fi
 
 echo "==> Installing claude-traffic-light..."
 brew install sidsimharaju/claude-traffic-light/claude-traffic-light
+
+echo "==> Registering Claude Code hooks..."
+claude-traffic-light install-hooks
+
+echo "==> Trusting this tap's service and starting the menu bar app..."
+brew trust --formula sidsimharaju/claude-traffic-light/claude-traffic-light
+brew services start claude-traffic-light
 
 echo
 echo "==> Done. Open (or restart) a Claude Code session — the menu bar dot should turn green as soon as you submit a prompt."

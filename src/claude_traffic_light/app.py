@@ -94,8 +94,12 @@ def format_age(updated_at: float) -> str:
 
 class TrafficLightApp(rumps.App):
     def __init__(self):
-        # quit_button="Quit" gives us a free, correctly-behaving Quit item.
-        super().__init__(name="Claude Traffic Light", title="⚪", quit_button="Quit")
+        # quit_button=None: rumps' automatic Quit item only gets added once
+        # at startup, but rebuild_menu() calls self.menu.clear() on every
+        # tick — which was wiping that item out a few seconds after launch
+        # and leaving no way to quit but a force-quit. Adding our own Quit
+        # item inside rebuild_menu (so it survives every rebuild) instead.
+        super().__init__(name="Claude Traffic Light", title="⚪", quit_button=None)
         self.timer = rumps.Timer(self.tick, POLL_SECONDS)
         self.timer.start()
         self.tick(None)
@@ -130,6 +134,8 @@ class TrafficLightApp(rumps.App):
 
         self.menu.add(rumps.separator)
         self.menu.add(rumps.MenuItem("Refresh now", callback=self.tick))
+        self.menu.add(rumps.separator)
+        self.menu.add(rumps.MenuItem("Quit", callback=rumps.quit_application))
 
 
 def run():

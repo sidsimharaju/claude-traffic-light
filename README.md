@@ -40,28 +40,22 @@ Send them this one line — it works even if they've never installed Homebrew:
 curl -fsSL https://raw.githubusercontent.com/sidsimharaju/claude-traffic-light/main/install.sh | bash
 ```
 
-It installs Homebrew first if they don't have it, then everything below.
+It installs Homebrew first if they don't have it, then runs everything below for them — including the hooks and service steps, which is why `install.sh` exists at all rather than just pointing people at `brew install`. (Homebrew's `post_install` looked like the right place to automate those two steps, but it isn't: it runs in a sandboxed build environment with a fake `$HOME`, so a hooks-install step there silently writes to nowhere useful, and starting a tap's service from it hits Homebrew's tap-trust gate regardless. Both only work when run for real, in your own shell — which is exactly what `install.sh` does.)
 
-### Homebrew (recommended) — one command
+### Homebrew (manual steps)
 
 ```bash
 brew install sidsimharaju/claude-traffic-light/claude-traffic-light
+claude-traffic-light install-hooks
+brew trust --formula sidsimharaju/claude-traffic-light/claude-traffic-light   # one-time, lets brew run this tap's service
+brew services start claude-traffic-light
 ```
-
-That's it. The fully-qualified `user/tap/formula` form taps the repo and installs in one shot, and a `post_install` step registers the Claude Code hooks and starts the menu bar app for you — no separate `brew tap`, `install-hooks`, or `brew services start` needed.
 
 (A bare `brew install claude-traffic-light`, without the `sidsimharaju/claude-traffic-light/` prefix, only works *after* you've tapped at least once — Homebrew has no way to find an untapped formula by short name. The fully-qualified command above always works from a clean machine.)
 
 Open (or restart) a Claude Code session — the dot should turn green as soon as you submit a prompt.
 
 One dependency (`pyobjc-core`) has C extensions and gets built from source, so this needs Xcode Command Line Tools installed and reasonably current. If you've never run a dev tool on this Mac before, `brew install` will prompt you to install them (accept it, then re-run the command); if they're just outdated, brew's error message tells you to update via Software Update.
-
-If you ever need to redo either automatic step by hand (e.g. `install-hooks` silently no-ops if `~/.claude` isn't writable yet):
-
-```bash
-claude-traffic-light install-hooks
-brew services start claude-traffic-light
-```
 
 ### From source (pipx)
 
