@@ -44,14 +44,36 @@ class ClaudeTrafficLight < Formula
     error_log_path var/"log/claude-traffic-light.err.log"
   end
 
+  # Registers the Claude Code hooks and starts the menu bar app right
+  # after `brew install` — the whole point of packaging this is a single
+  # command, so don't make the user chase three more steps for it.
+  # `install-hooks` is idempotent (safe on brew upgrade/reinstall too).
+  # Neither step aborts the install if it fails — worst case, the caveats
+  # below show the same two commands to run by hand.
+  def post_install
+    begin
+      system bin/"claude-traffic-light", "install-hooks"
+    rescue => e
+      opoo "claude-traffic-light: couldn't register hooks automatically (#{e}). " \
+           "Run `claude-traffic-light install-hooks` yourself."
+    end
+
+    begin
+      system HOMEBREW_BREW_FILE, "services", "start", name
+    rescue => e
+      opoo "claude-traffic-light: couldn't start the menu bar app automatically (#{e}). " \
+           "Run `brew services start claude-traffic-light` yourself."
+    end
+  end
+
   def caveats
     <<~EOS
-      Register the Claude Code hooks that drive the menu bar dot (one-time,
-      safe to re-run, and per-user — do this as whichever user runs Claude
-      Code):
-        claude-traffic-light install-hooks
+      Hooks are registered in ~/.claude/settings.json and the menu bar app
+      is running — open (or restart) a Claude Code session and the dot
+      should turn green as soon as you submit a prompt.
 
-      Then start the menu bar app:
+      If either step above didn't happen (e.g. this ran non-interactively):
+        claude-traffic-light install-hooks
         brew services start claude-traffic-light
 
       To remove the hooks again (e.g. before `brew uninstall`):

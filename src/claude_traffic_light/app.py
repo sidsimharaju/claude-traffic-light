@@ -30,7 +30,7 @@ STATE_DIR = Path.home() / ".claude-traffic-light" / "sessions"
 # and quietly prune it.
 STALE_SECONDS = 12 * 60 * 60  # 12 hours
 
-POLL_SECONDS = 2
+POLL_SECONDS = 5
 
 DOT = {
     "needs_action": "🟡",

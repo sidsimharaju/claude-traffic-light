@@ -18,7 +18,7 @@ Claude Code session                     claude-traffic-light hook       Menu bar
 You submit a prompt      ──UserPromptSubmit──►  writes state=running ─┐
 Claude calls a tool      ──PreToolUse────────►  writes state=running  │  polls
                                                                        ├─ ~/.claude-traffic-light/     every
-Needs your OK / idle     ──Notification───────► writes state=needs_   │  sessions/<id>.json           2 sec
+Needs your OK / idle     ──Notification───────► writes state=needs_   │  sessions/<id>.json           5 sec
                           (permission_prompt,     action               │
                            idle_prompt,                                │
                            agent_needs_input)                          │
@@ -32,16 +32,24 @@ Hooks are registered pointing at the `claude-traffic-light` command resolved on 
 
 ## Install
 
-### Homebrew (recommended)
+### Homebrew (recommended) — one command
 
 ```bash
-brew tap sidsimharaju/claude-traffic-light
-brew install claude-traffic-light
+brew install sidsimharaju/claude-traffic-light/claude-traffic-light
+```
+
+That's it. The fully-qualified `user/tap/formula` form taps the repo and installs in one shot, and a `post_install` step registers the Claude Code hooks and starts the menu bar app for you — no separate `brew tap`, `install-hooks`, or `brew services start` needed.
+
+(A bare `brew install claude-traffic-light`, without the `sidsimharaju/claude-traffic-light/` prefix, only works *after* you've tapped at least once — Homebrew has no way to find an untapped formula by short name. The fully-qualified command above always works from a clean machine.)
+
+Open (or restart) a Claude Code session — the dot should turn green as soon as you submit a prompt.
+
+If you ever need to redo either automatic step by hand (e.g. `install-hooks` silently no-ops if `~/.claude` isn't writable yet):
+
+```bash
 claude-traffic-light install-hooks
 brew services start claude-traffic-light
 ```
-
-Open (or restart) a Claude Code session — the dot should turn green as soon as you submit a prompt.
 
 ### From source (pipx)
 
