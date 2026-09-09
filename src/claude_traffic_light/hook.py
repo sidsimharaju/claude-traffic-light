@@ -16,6 +16,7 @@ States:
 State files live in ~/.claude-traffic-light/sessions/<session_id>.json
 """
 import json
+import os
 import sys
 import time
 from pathlib import Path
@@ -69,7 +70,14 @@ def handle(state: str, data: dict) -> int:
     }
 
     # Atomic write so the menu bar app never reads a half-written file.
-    tmp_path = path.with_suffix(".tmp")
+    # The tmp filename is unique per invocation (pid + nanosecond
+    # timestamp), not just `<id>.tmp` — Claude Code can fire two hooks for
+    # the same session close together (parallel tool calls), and two
+    # subprocesses both writing to one fixed tmp path could race: whichever
+    # finishes last wins, even if it started first and represents an older
+    # event. A unique tmp per writer removes that race entirely; the final
+    # `replace` is still the only point where the visible file changes.
+    tmp_path = path.with_name(f"{path.name}.{os.getpid()}.{time.time_ns()}.tmp")
     tmp_path.write_text(json.dumps(record))
     tmp_path.replace(path)
     return 0

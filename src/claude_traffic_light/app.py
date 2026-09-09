@@ -7,7 +7,7 @@ hook`) and shows a colored dot in the menu bar:
     green (running)       Claude is actively working on a turn / tool call
     yellow (needs action) Claude is waiting on you (a permission prompt, or
                            it's been idle waiting for your next message)
-    red (idle)            Claude finished its last turn and is waiting
+    grey (idle)           Claude finished its last turn and is waiting
 
 With multiple sessions open, the busiest state wins: needs_action beats
 running beats idle. Click the icon to see every session and its state.
@@ -27,15 +27,22 @@ STATE_DIR = Path.home() / ".claude-traffic-light" / "sessions"
 
 # How long a session file can go unchanged before we treat it as
 # abandoned (e.g. the terminal was force-quit and SessionEnd never fired)
-# and quietly prune it.
-STALE_SECONDS = 12 * 60 * 60  # 12 hours
+# and quietly prune it. This used to be 12 hours, which was the real
+# cause behind the dot appearing to "get stuck" / not update: with
+# multiple sessions combined (busiest wins), one abandoned session left
+# sitting at running/needs_action could dominate the global dot for up
+# to half a day. 20 minutes is a deliberate tradeoff — long enough that a
+# single genuinely long-running tool call (a slow build, say) won't get
+# mistaken for abandoned, short enough that a crashed/force-quit session
+# stops lying about its state within a reasonable window instead of one.
+STALE_SECONDS = 20 * 60  # 20 minutes
 
 POLL_SECONDS = 5
 
 DOT = {
     "needs_action": "🟡",
     "running": "🟢",
-    "idle": "🔴",
+    "idle": "⚪",
 }
 
 # Lower number = higher priority when combining multiple sessions.
@@ -88,7 +95,7 @@ def format_age(updated_at: float) -> str:
 class TrafficLightApp(rumps.App):
     def __init__(self):
         # quit_button="Quit" gives us a free, correctly-behaving Quit item.
-        super().__init__(name="Claude Traffic Light", title="🔴", quit_button="Quit")
+        super().__init__(name="Claude Traffic Light", title="⚪", quit_button="Quit")
         self.timer = rumps.Timer(self.tick, POLL_SECONDS)
         self.timer.start()
         self.tick(None)
@@ -118,7 +125,7 @@ class TrafficLightApp(rumps.App):
                 cwd = s.get("cwd") or "?"
                 project = Path(cwd).name or cwd
                 age = format_age(s.get("updated_at", 0))
-                label = f"{DOT.get(state, '🔴')}  {project} — {LABEL.get(state, state)} ({age})"
+                label = f"{DOT.get(state, '⚪')}  {project} — {LABEL.get(state, state)} ({age})"
                 self.menu.add(rumps.MenuItem(label))
 
         self.menu.add(rumps.separator)

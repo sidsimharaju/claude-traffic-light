@@ -3,10 +3,10 @@
 A macOS menu bar dot that shows what [Claude Code](https://claude.com/claude-code) is doing right now, so you don't have to keep alt-tabbing back to the terminal to check.
 
 - 🟢 **Green** — Claude is running (working on your prompt or a tool call)
-- 🔴 **Red** — Claude is idle (finished its last turn, waiting for you)
+- ⚪ **Grey** — Claude is idle (finished its last turn, waiting for you)
 - 🟡 **Yellow** — Claude needs action (a permission prompt, or it's been sitting idle waiting on your next message)
 
-With several Claude Code sessions open at once, the dot shows the busiest one — yellow beats green beats red — and the dropdown lists every session individually.
+With several Claude Code sessions open at once, the dot shows the busiest one — yellow beats green beats grey — and the dropdown lists every session individually.
 
 ## How it works
 
@@ -133,7 +133,7 @@ python3 -m pytest tests/ -v
 ## Known limitations / things to know
 
 - **Claude Code only, for now.** Hooks are a Claude Code feature; other AI coding tools that don't expose an equivalent event API can't drive the dot without a much less reliable approach (polling window state or session logs).
-- **Crash recovery is best-effort.** If a terminal is force-quit, `SessionEnd` never fires and its session file lingers. The app prunes any session file untouched for 12+ hours, and you can always delete `~/.claude-traffic-light/sessions/` yourself.
+- **Crash recovery is best-effort.** If a terminal is force-quit, `SessionEnd` never fires and its session file lingers. The app prunes any session file untouched for 20+ minutes, and you can always delete `~/.claude-traffic-light/sessions/` yourself. Since the dot combines *all* sessions (busiest wins), one abandoned session sitting at 🟢/🟡 will dominate the dot until it's pruned — if the dot seems stuck, check the dropdown for a session that's actually just dead.
 - **Global, not per-window.** The dot reflects *all* your open Claude Code sessions combined (busiest wins). The dropdown breaks it out by project folder if you need to know which one.
 - **macOS only.** This uses `rumps`/PyObjC menu bar APIs and won't run anywhere else, by design.
 
