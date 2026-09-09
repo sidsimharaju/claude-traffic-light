@@ -1,0 +1,30 @@
+[build-system]
+requires = ["hatchling"]
+build-backend = "hatchling.build"
+
+[project]
+name = "claude-traffic-light"
+version = "0.1.0"
+description = "A macOS menu bar dot that shows what Claude Code is doing right now."
+readme = "README.md"
+license = "MIT"
+requires-python = ">=3.9"
+authors = [{ name = "Siddharth Simharaju" }]
+classifiers = [
+    "Environment :: MacOS X",
+    "Operating System :: MacOS",
+    "Programming Language :: Python :: 3",
+]
+dependencies = ["rumps>=0.4.0"]
+
+[project.urls]
+Homepage = "https://github.com/sidsimharaju/claude-traffic-light"
+
+[project.scripts]
+claude-traffic-light = "claude_traffic_light.cli:main"
+
+[project.optional-dependencies]
+test = ["pytest"]
+
+[tool.hatch.build.targets.wheel]
+packages = ["src/claude_traffic_light"]
