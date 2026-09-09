@@ -30,14 +30,26 @@ if ! command -v brew >/dev/null 2>&1; then
   echo "==> Homebrew not found — installing it first (this may prompt you for your password, and for Xcode Command Line Tools if this is a fresh Mac)..."
   /bin/bash -c "$(curl -fsSL https://raw.githubusercontent.com/Homebrew/install/HEAD/install.sh)"
 
-  # The installer tells you to add brew to your PATH but doesn't do it for
-  # this script's own (non-interactive) shell — pick up the common
-  # locations so the rest of this script can keep going without a new
-  # terminal.
+  # The official installer only *prints* the PATH-setup instructions, it
+  # doesn't run them — so on a genuinely bare Mac, brew would work for the
+  # rest of *this* script but "command not found" again the next time you
+  # open a new Terminal window. Do both: eval now (so this script can keep
+  # going), and persist it to .zprofile (so it survives future sessions),
+  # idempotently in case it's somehow already there.
+  BREW_BIN=""
   if [[ -x /opt/homebrew/bin/brew ]]; then
-    eval "$(/opt/homebrew/bin/brew shellenv)"
+    BREW_BIN=/opt/homebrew/bin/brew
   elif [[ -x /usr/local/bin/brew ]]; then
-    eval "$(/usr/local/bin/brew shellenv)"
+    BREW_BIN=/usr/local/bin/brew
+  fi
+
+  if [[ -n "$BREW_BIN" ]]; then
+    eval "$("$BREW_BIN" shellenv)"
+    SHELLENV_LINE="eval \"\$(${BREW_BIN} shellenv)\""
+    if ! grep -qF "$SHELLENV_LINE" "$HOME/.zprofile" 2>/dev/null; then
+      echo "$SHELLENV_LINE" >> "$HOME/.zprofile"
+      echo "==> Added Homebrew to your PATH in ~/.zprofile (so new terminal windows find it too)."
+    fi
   fi
 fi
 
