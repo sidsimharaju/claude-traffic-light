@@ -6,8 +6,8 @@ class ClaudeTrafficLight < Formula
   # NOTE: url/sha256 point at a tagged GitHub release tarball. Bump both
   # together when cutting a new release — GitHub's release archive
   # checksums are stable once published, but only after the tag exists.
-  url "https://github.com/sidsimharaju/claude-traffic-light/archive/refs/tags/v0.1.2.tar.gz"
-  sha256 "47fce173ebeb81e16368f4d650bfe7eb01014e536271baff698d64498c679989"
+  url "https://github.com/sidsimharaju/claude-traffic-light/archive/refs/tags/v0.1.3.tar.gz"
+  sha256 "8cbff643d0b76bc105e31c2509cb7540b5e202c993d2af5d29dfcc0342711282"
   license "MIT"
 
   depends_on "python@3.13"
