@@ -2,7 +2,9 @@
 # Bootstrap installer for claude-traffic-light.
 #
 # One command, no prior Homebrew/Python knowledge required:
-#   curl -fsSL https://raw.githubusercontent.com/sidsimharaju/claude-traffic-light/main/install.sh | bash
+#   curl -fsSL https://get-claude-traffic-light.siddharth-simharaju.workers.dev | bash
+# (or, equivalently, straight from GitHub instead of the short URL above:
+#   curl -fsSL https://raw.githubusercontent.com/sidsimharaju/claude-traffic-light/main/install.sh | bash )
 #
 # What it does:
 #   1. Installs Homebrew if it isn't already present (the official installer

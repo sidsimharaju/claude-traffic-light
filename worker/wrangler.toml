@@ -5,5 +5,5 @@ compatibility_date = "2025-01-01"
 # Created by `wrangler kv namespace create INSTALLS` (see worker/README.md)
 # — paste the id it prints in place of the placeholder below.
 kv_namespaces = [
-  { binding = "INSTALLS", id = "REPLACE_WITH_KV_NAMESPACE_ID" }
+  { binding = "INSTALLS", id = "30b664f0bd9c40a5aa58052c2c756d76" }
 ]

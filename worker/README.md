@@ -2,64 +2,49 @@
 
 Serves `install.sh` from a short, free `*.workers.dev` URL and counts install
 attempts (curl requests only — a browser visiting the link doesn't count).
-Already tested end-to-end locally with `wrangler dev` (a fully local, fake
-Cloudflare account — no login needed for that part). What's left needs your
-real Cloudflare account, so these steps are yours to run:
 
-## 1. One-time setup
+**Deployed and live:** https://get-claude-traffic-light.siddharth-simharaju.workers.dev
 
-```bash
-cd worker
-npx wrangler login          # opens your browser to authorize — free account is fine
-npx wrangler kv namespace create INSTALLS
-```
-
-That last command prints an `id`. Paste it into `wrangler.toml`, replacing
-`REPLACE_WITH_KV_NAMESPACE_ID`:
-
-```toml
-kv_namespaces = [
-  { binding = "INSTALLS", id = "<the id it printed>" }
-]
-```
-
-Then set a secret token for the `/stats` endpoint (pick anything, keep it to
-yourself — this is what gates who can read the install count):
+## Checking the install count
 
 ```bash
-npx wrangler secret put STATS_TOKEN
-```
-
-## 2. Deploy
-
-```bash
-npx wrangler deploy
-```
-
-It prints the live URL — something like
-`https://get-claude-traffic-light.<your-account-subdomain>.workers.dev`. That
-whole URL is what you share:
-
-```bash
-curl -fsSL https://get-claude-traffic-light.<your-account-subdomain>.workers.dev | bash
-```
-
-(`wrangler.toml`'s `name` controls the first part of that subdomain — rename
-it before deploying if you want something shorter than
-`get-claude-traffic-light`, e.g. `get` or `cctl`.)
-
-## Checking the count
-
-```bash
-curl "https://get-claude-traffic-light.<your-account-subdomain>.workers.dev/stats?token=<your STATS_TOKEN>"
+curl "https://get-claude-traffic-light.siddharth-simharaju.workers.dev/stats?token=<STATS_TOKEN>"
 # {"installs": 12}
 ```
 
-## Updating install.sh
+The token was generated and set as a Worker secret during initial deploy
+(`wrangler secret put STATS_TOKEN`) — it isn't in this repo. If you've lost
+it, set a new one and redeploy:
 
-The Worker always proxies the *live* `install.sh` from the `main` branch on
-GitHub — there's nothing to redeploy when that script changes, only when
-`worker/src/index.js` itself changes.
+```bash
+cd worker
+npx wrangler secret put STATS_TOKEN
+```
+
+## Redeploying after a code change
+
+Only needed when `worker/src/index.js` itself changes — the Worker always
+proxies the *live* `install.sh` from GitHub's `main` branch, so changes to
+that file need no redeploy.
+
+```bash
+cd worker
+npx wrangler deploy
+```
+
+## Redeploying from scratch (e.g. a new machine, or a fresh account)
+
+```bash
+cd worker
+npx wrangler login                          # opens your browser
+npx wrangler kv namespace create INSTALLS
+# paste the printed id into wrangler.toml's kv_namespaces block
+npx wrangler secret put STATS_TOKEN         # pick any secret, keep it to yourself
+npx wrangler deploy
+```
+
+(`wrangler.toml`'s `name` controls the `<name>.<account>.workers.dev`
+subdomain — rename it before deploying if you want something different.)
 
 ## Local testing
 
